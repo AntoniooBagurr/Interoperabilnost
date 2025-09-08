@@ -6,7 +6,9 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseSqlite(builder.Configuration.GetConnectionString("db")));
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("sql")));
+
+
 
 builder.Services.AddControllers();
 

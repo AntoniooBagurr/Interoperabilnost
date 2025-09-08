@@ -71,7 +71,8 @@ public class ProductsImportController : ControllerBase
             Sales = dto.Sales,
             Reviews = dto.Reviews,
             CategoryId = dto.CategoryId,
-            CategoryId2 = dto.CategoryId2
+            CategoryId2 = dto.CategoryId2,
+            RawXml = xml
         };
 
         _db.Products.Add(entity);
