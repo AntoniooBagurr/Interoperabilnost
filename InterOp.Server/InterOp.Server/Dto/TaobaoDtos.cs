@@ -21,7 +21,6 @@ public sealed class TaobaoItem
     public string title { get; set; } = "";
     public decimal? price { get; set; }
     public string detail_url { get; set; } = "";
-
     public string? pic { get; set; }
     public string? sales { get; set; }
     public string? reviews { get; set; }

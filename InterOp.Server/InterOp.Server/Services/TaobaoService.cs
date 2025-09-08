@@ -13,20 +13,20 @@ namespace InterOp.Server.Services
         public TaobaoService(HttpClient http, IConfiguration cfg, ILogger<TaobaoService> log)
         { _http = http; _cfg = cfg; _log = log; }
 
-        private async Task<(bool ok, string payload, int status)> CallAsync(string url, CancellationToken ct)
+        private async Task<(bool ok, string body, int status)> CallAsync(string url, CancellationToken ct)
         {
             var (_, key) = Cfg();
             var hostOnly = NormalizeHost(_cfg["RapidApi:Host"]);
+
             using var req = new HttpRequestMessage(HttpMethod.Get, url);
             req.Headers.Add("X-RapidAPI-Key", key);
             req.Headers.Add("X-RapidAPI-Host", hostOnly);
 
             using var res = await _http.SendAsync(req, ct);
-            var body = await res.Content.ReadAsStringAsync(ct);
-
-            _log.LogInformation("RapidAPI GET {Url} -> {Status} len={Len}", url, (int)res.StatusCode, body?.Length ?? 0);
+            var body = await res.Content.ReadAsStringAsync(ct); 
             return (res.IsSuccessStatusCode, body, (int)res.StatusCode);
         }
+
 
         private static string NormalizeHost(string? h)
         {
