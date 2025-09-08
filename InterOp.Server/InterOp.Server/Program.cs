@@ -1,4 +1,5 @@
 using InterOp.Server.Data;
+using InterOp.Server.Formatters;
 using InterOp.Server.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,8 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlite(builder.Configuration.GetConnectionString("db")));
 
-builder.Services.AddControllers()
-    .AddXmlSerializerFormatters(); 
+builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -16,7 +16,14 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<TaobaoService>();
 builder.Services.AddHttpClient<TaobaoBasicService>();
 
+builder.Logging.ClearProviders();
+builder.Logging.AddSimpleConsole(o => { o.TimestampFormat = "HH:mm:ss "; o.SingleLine = true; });
 
+
+builder.Services.AddControllers(options =>
+{
+    options.InputFormatters.Insert(0, new PlainTextInputFormatter());
+});
 
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())

@@ -26,7 +26,7 @@ public static class XmlValidationService
         using var reader = XmlReader.Create(xmlStream, settings);
         try
         {
-            while (reader.Read()) { /* čitanje trigira validaciju */ }
+            while (reader.Read()) {  }
             return (!errors.Any(), errors);
         }
         catch (XmlException ex)

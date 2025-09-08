@@ -17,40 +17,47 @@ public class ProductsImportController : ControllerBase
     private readonly IWebHostEnvironment _env;
 
     public ProductsImportController(AppDbContext db, IWebHostEnvironment env)
-    {
-        _db = db; _env = env;
-    }
-    [HttpPost("import/xsd")]
-    public async Task<IActionResult> ImportWithXsd()
-    {
-        if (Request.ContentType?.Contains("xml") != true)
-            return BadRequest("Content-Type mora biti application/xml.");
+    { _db = db; _env = env; }
 
-        using var mem = new MemoryStream();
-        await Request.Body.CopyToAsync(mem);
-        mem.Position = 0;
+    [HttpPost("xsd")]
+    [Consumes("text/plain")]
+    public async Task<IActionResult> ImportWithXsd([FromBody] string xml, CancellationToken ct = default)
+        => await ValidateDeserializeAndSave(xml, ct);
+
+    [HttpPost("xsd-raw")]
+    public async Task<IActionResult> ImportWithXsdRaw(CancellationToken ct = default)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        var xml = await reader.ReadToEndAsync();
+        if (string.IsNullOrWhiteSpace(xml))
+            return BadRequest(new { message = "XML body je prazan." });
+
+        return await ValidateDeserializeAndSave(xml, ct);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetById(int id)
+        => (await _db.Products.FindAsync(id)) is { } p ? Ok(p) : NotFound();
+
+    private async Task<IActionResult> ValidateDeserializeAndSave(string xml, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(xml))
+            return BadRequest(new { message = "XML body je prazan." });
 
         var xsdPath = Path.Combine(_env.ContentRootPath, "XmlSchemas", "product.xsd");
+        await using var xmlMs = new MemoryStream(Encoding.UTF8.GetBytes(xml));
         await using var xsd = System.IO.File.OpenRead(xsdPath);
 
-        var (ok, errors) = XmlValidationService.ValidateWithXsd(mem, xsd);
-        if (!ok)
-            return UnprocessableEntity(new { message = "XSD validacija nije prošla.", errors });
+        var (ok, errors) = XmlValidationService.ValidateWithXsd(xmlMs, xsd);
+        if (!ok) return UnprocessableEntity(new { message = "XSD validation failed", errors });
 
-        mem.Position = 0;
+        xmlMs.Position = 0;
         var ser = new XmlSerializer(typeof(ProductXml));
-        ProductXml? dto;
-        try
-        {
-            dto = (ProductXml?)ser.Deserialize(mem);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = "Ne mogu deserijalizirati XML.", error = ex.Message });
-        }
+        if (ser.Deserialize(xmlMs) is not ProductXml dto)
+            return BadRequest(new { message = "XML deserialization failed" });
 
-        if (dto == null)
-            return BadRequest("Prazan ili neispravan XML.");
+        if (await _db.Products.AnyAsync(p => p.ExtId == dto.Id, ct))
+            return Conflict(new { message = "Product već postoji.", id = dto.Id });
 
         var entity = new Product
         {
@@ -59,23 +66,17 @@ public class ProductsImportController : ControllerBase
             Currency = dto.Currency,
             Price = dto.Price,
             ShopName = dto.ShopName,
-            Url = dto.Url
+            Url = dto.Url,
+            Pic = dto.Pic,
+            Sales = dto.Sales,
+            Reviews = dto.Reviews,
+            CategoryId = dto.CategoryId,
+            CategoryId2 = dto.CategoryId2
         };
 
-        var exists = await _db.Products.AnyAsync(p => p.ExtId == entity.ExtId);
-        if (exists)
-            return Conflict(new { message = $"Product s ExtId={entity.ExtId} već postoji." });
-
         _db.Products.Add(entity);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
 
-        return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
-    }
-
-    [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetById(int id)
-    {
-        var item = await _db.Products.FindAsync(id);
-        return item is null ? NotFound() : Ok(item);
+        return Created($"/api/products/{entity.Id}", entity);
     }
 }

@@ -3,16 +3,16 @@
 	<xs:element name="Product">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="Id" type="xs:string"/>
-				<xs:element name="Title" type="xs:string"/>
-				<xs:element name="Currency" type="xs:string" minOccurs="0"/>
-				<xs:element name="Price" type="xs:decimal" minOccurs="0"/>
-				<xs:element name="ShopName" type="xs:string" minOccurs="0"/>
-				<xs:element name="Url" type="xs:anyURI" minOccurs="0"/>
-				<xs:element name="Pic" type="xs:anyURI" minOccurs="0"/>
-				<xs:element name="Sales" type="xs:string" minOccurs="0"/>
-				<xs:element name="Reviews" type="xs:string" minOccurs="0"/>
-				<xs:element name="CategoryId" type="xs:string" minOccurs="0"/>
+				<xs:element name="Id"         type="xs:string"/>
+				<xs:element name="Title"      type="xs:string"/>
+				<xs:element name="Currency"   type="xs:string"  minOccurs="0"/>
+				<xs:element name="Price"      type="xs:decimal" minOccurs="0"/>
+				<xs:element name="ShopName"   type="xs:string"  minOccurs="0"/>
+				<xs:element name="Url"        type="xs:anyURI"  minOccurs="0"/>
+				<xs:element name="Pic"        type="xs:anyURI"  minOccurs="0"/>
+				<xs:element name="Sales"      type="xs:string"  minOccurs="0"/>
+				<xs:element name="Reviews"    type="xs:string"  minOccurs="0"/>
+				<xs:element name="CategoryId"  type="xs:string" minOccurs="0"/>
 				<xs:element name="CategoryId2" type="xs:string" minOccurs="0"/>
 			</xs:sequence>
 		</xs:complexType>
