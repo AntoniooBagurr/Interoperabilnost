@@ -1,0 +1,41 @@
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+	<start>
+		<element name="Product">
+			<interleave>
+				<element name="Id">
+					<text/>
+				</element>
+				<element name="Title">
+					<text/>
+				</element>
+				<element name="Currency">
+					<text/>
+				</element>
+				<element name="Price">
+					<data type="decimal"/>
+				</element>
+				<element name="ShopName">
+					<text/>
+				</element>
+				<element name="Url">
+					<text/>
+				</element>
+				<element name="Pic">
+					<text/>
+				</element>
+				<element name="Sales">
+					<text/>
+				</element>
+				<element name="Reviews">
+					<text/>
+				</element>
+				<element name="CategoryId">
+					<text/>
+				</element>
+				<element name="CategoryId2">
+					<text/>
+				</element>
+			</interleave>
+		</element>
+	</start>
+</grammar>
