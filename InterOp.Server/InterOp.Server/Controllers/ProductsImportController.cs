@@ -2,6 +2,7 @@
 using InterOp.Server.Domain;
 using InterOp.Server.Dto;
 using InterOp.Server.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -12,6 +13,7 @@ using System.Xml.Serialization;
 namespace InterOp.Server.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/products")]
 public class ProductsImportController : ControllerBase
 {
@@ -70,6 +72,39 @@ public class ProductsImportController : ControllerBase
         await _db.SaveChangesAsync(ct);
 
         return Created($"/api/products/{entity.Id}", entity);
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(int id, Product dto)
+    {
+        var p = await _db.Products.FindAsync(id);
+        if (p is null) return NotFound();
+
+        p.ExtId = dto.ExtId;
+        p.Title = dto.Title;
+        p.Currency = dto.Currency;
+        p.Price = dto.Price;
+        p.ShopName = dto.ShopName;
+        p.Url = dto.Url;
+        p.Pic = dto.Pic;
+        p.Sales = dto.Sales;
+        p.Reviews = dto.Reviews;
+        p.CategoryId = dto.CategoryId;
+        p.CategoryId2 = dto.CategoryId2;
+        p.RawXml = dto.RawXml;
+
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var p = await _db.Products.FindAsync(id);
+        if (p is null) return NotFound();
+        _db.Products.Remove(p);
+        await _db.SaveChangesAsync();
+        return NoContent();
     }
 
     [HttpPost("rng")]
